@@ -10,8 +10,9 @@ import (
 )
 
 type initCmd struct {
-	cmd    *cobra.Command
-	config string
+	cmd         *cobra.Command
+	config      string
+	interactive bool
 }
 
 func newInitCmd() *initCmd {
@@ -40,6 +41,7 @@ func newInitCmd() *initCmd {
 	}
 
 	cmd.Flags().StringVarP(&root.config, "config", "f", ".goreleaser.yml", "Load configuration from file")
+	cmd.Flags().BoolVarP(&root.interactive, "interactive", "i", false, "Interactively generate goreleaser config file")
 
 	root.cmd = cmd
 	return root
