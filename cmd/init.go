@@ -1,11 +1,14 @@
 package cmd
 
 import (
+	"github.com/fatih/color"
+	"github.com/goreleaser/goreleaser/internal/static"
+	"github.com/goreleaser/goreleaser/pkg/config"
+	"github.com/goreleaser/goreleaser/pkg/interactive"
+	"gopkg.in/yaml.v2"
 	"os"
 
 	"github.com/apex/log"
-	"github.com/fatih/color"
-	"github.com/goreleaser/goreleaser/internal/static"
 	"github.com/spf13/cobra"
 )
 
@@ -30,9 +33,25 @@ func newInitCmd() *initCmd {
 			}
 			defer f.Close()
 
-			log.Infof(color.New(color.Bold).Sprintf("Generating %s file", root.config))
-			if _, err := f.WriteString(static.ExampleConfig); err != nil {
-				return err
+			if !root.interactive {
+				log.Infof(color.New(color.Bold).Sprintf("Generating %s file", root.config))
+				if _, err := f.WriteString(static.ExampleConfig); err != nil {
+					return err
+				}
+			} else {
+				log.Infof(color.New(color.Bold).Sprint("Entering interactive mode"))
+				cb := interactive.NewConfigBuilder()
+				var (
+					project config.Project
+					err     error
+				)
+				if project, err = cb.Run(); err != nil {
+					return err
+				}
+
+				if err := yaml.NewEncoder(f).Encode(project); err != nil {
+					return err
+				}
 			}
 
 			log.WithField("file", root.config).Info("config created; please edit accordingly to your needs")
